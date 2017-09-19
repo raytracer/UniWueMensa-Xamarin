@@ -187,14 +187,17 @@ namespace uniwuemensa
             try
             {
                 HttpResponseMessage response = await client.GetAsync("http://devops.raytracer.me:1234/");
-                content = Option.Some(await response.Content.ReadAsStringAsync());
-            }
-            catch (Exception)
-            {
-                if (!content.HasValue) 
-                { 
-                    await App.Current.MainPage.DisplayAlert("Keine Daten", "Weder Daten im Cache noch eine Internetverbindung!", "Ok");
+                if (response.StatusCode == System.Net.HttpStatusCode.OK) {
+                    var _content = await response.Content.ReadAsStringAsync();
+                    File.WriteAllText(cachePath, _content);
+                    content = Option.Some(_content);
                 }
+            }
+            catch (Exception) {}
+
+            if (!content.HasValue)
+            {
+                await App.Current.MainPage.DisplayAlert("Keine Daten", "Weder Daten im Cache noch eine Internetverbindung!", "Ok");
             }
 
             content.MatchSome(rawJson =>
