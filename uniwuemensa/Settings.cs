@@ -15,7 +15,7 @@ namespace uniwuemensa
     public class JsonSettings {
         public JsonPrice Price;
         public string[] Cafeterias;
-        public int version;
+        public int Version;
     }
 
 
@@ -24,7 +24,7 @@ namespace uniwuemensa
         private static string filename = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "settings.json");
         private JsonSettings _settings;
 
-        private const int Version = 1;
+        private const int CurrentVersion = 1;
         public JsonSettings settings
         {
             get {
@@ -44,8 +44,8 @@ namespace uniwuemensa
 
         private Settings() {
             if (File.Exists(filename)) {
-                settings = JsonConvert.DeserializeObject<JsonSettings>(File.ReadAllText(filename));
-                if (settings.version < Version)
+                _settings = JsonConvert.DeserializeObject<JsonSettings>(File.ReadAllText(filename));
+                if (_settings.Version < CurrentVersion)
                 {
                     settings = getDefaultSettings();
                 }
@@ -56,7 +56,7 @@ namespace uniwuemensa
 
         private static JsonSettings getDefaultSettings()
         {
-            return new JsonSettings { Price = JsonPrice.Student, Cafeterias = AllCafeterias };
+            return new JsonSettings { Price = JsonPrice.Student, Cafeterias = AllCafeterias, Version = CurrentVersion };
         }
 
         public void WriteSettings() {

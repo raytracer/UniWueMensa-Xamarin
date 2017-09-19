@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net.Http;
 using System.Linq;
 using System.Collections.Generic;
@@ -176,14 +177,38 @@ namespace uniwuemensa
 
         private async void CreateCarouselViaProxy()
         {
+            var cachePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "cached_mensa.json");
+            var content = Option.None<string>();
+            
+            if (File.Exists(cachePath)) content = Option.Some(File.ReadAllText(cachePath));
+
             HttpClient client = new HttpClient();
-            HttpResponseMessage response = await client.GetAsync("http://devops.raytracer.me:1234/");
 
-            var rawDays = JArray.Parse(await response.Content.ReadAsStringAsync());
-            this.days = rawDays.Select(day => day.ToObject<Day>()).ToList();
+            try
+            {
+                HttpResponseMessage response = await client.GetAsync("http://devops.raytracer.me:1234/");
+                content = Option.Some(await response.Content.ReadAsStringAsync());
+            }
+            catch (Exception)
+            {
+                if (!content.HasValue) 
+                { 
+                    await App.Current.MainPage.DisplayAlert("Keine Daten", "Weder Daten im Cache noch eine Internetverbindung!", "Ok");
+                }
+            }
 
-            UpdateView(Settings.Instance.settings);
-            Settings.Instance.settingsObs.Subscribe(settings => UpdateView(settings));
+            content.MatchSome(rawJson =>
+            {
+                var rawDays = JArray.Parse(rawJson);
+                this.days = rawDays.Select(day => day.ToObject<Day>()).ToList();
+
+                UpdateView(Settings.Instance.settings);
+
+                Settings.Instance.settingsObs.Subscribe(settings =>
+                {
+                    Xamarin.Forms.Device.BeginInvokeOnMainThread(() => UpdateView(settings));
+                });
+            });
         }
 
         private static string GetDateString()

@@ -44,7 +44,8 @@ namespace uniwuemensa
                     Settings.Instance.settings = new JsonSettings
                     {
 						Price = priceDict[pricePicker.Items[pricePicker.SelectedIndex]],
-                        Cafeterias = currentSettings.Cafeterias
+                        Cafeterias = currentSettings.Cafeterias,
+						Version = currentSettings.Version
                     };
                 }
             };
@@ -81,7 +82,8 @@ namespace uniwuemensa
                     Settings.Instance.settings = new JsonSettings
                     {
 						Price = currentSettings.Price,
-                        Cafeterias = Settings.AllCafeterias.Where(c => switches[c].IsToggled).ToArray()
+                        Cafeterias = Settings.AllCafeterias.Where(c => switches[c].IsToggled).ToArray(),
+						Version = currentSettings.Version
                     };
                 };
 
